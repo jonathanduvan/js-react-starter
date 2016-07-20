@@ -11,7 +11,19 @@ class Node extends Component {
     };
   }
 
-
+  render () {
+    return (
+      <Draggable
+        handle=".note-mover"
+        grid={[25, 25]}
+        defaultPosition={ x: 20, y: 20 }
+        position={position}
+        onStart={this.onStartDrag}
+        onDrag={this.onDrag}
+        onStop={this.onStopDrag}
+      >
+    )
+  }
 }
 
 export default Node;
