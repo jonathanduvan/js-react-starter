@@ -19,6 +19,7 @@ class NewNoteBar extends Component {
   // function to add new node
   addNote(event) {
     this.props.create(this.state.title);
+    this.setState({ title: '' });
   }
 
   render() {
