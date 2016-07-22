@@ -70,6 +70,7 @@ class Note extends Component {
 
   render() {
     return (
+      // Examples and inspiration found from https://github.com/bokuweb/react-resizable-and-movable
       <ResizableAndMovable
         onResize={this.onResize}
         onDrag={this.onDrag}
