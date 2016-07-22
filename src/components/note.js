@@ -1,106 +1,101 @@
 
 import React, { Component } from 'react';
-import Draggable from 'react-draggable';
+import ResizableAndMovable from 'react-resizable-and-movable';
 import marked from 'marked';
 
-class Node extends Component {
+class Note extends Component {
   constructor(props) {
     super(props);
-
-    Note.propTypes = {
-      deleteNote: React.PropTypes.func,
-      updateNote: React.PropTypes.func,
-    };
-
 
     // details of each note instance
     this.state = {
       isEditing: false,
-      id: this.props.id,
-      title: this.props.note.title,
-      text: this.props.note.text,
-      x: this.props.note.x,
-      y: this.props.note.y,
-      width:200,
-      height:200,
-      zIndex: this.props.note.zIndex,
     };
 
-    // Performable actions on a note
-    this.onEdit = this.onEdit.bind(this);
+    // Binding statements
     this.onInputChange = this.onInputChange.bind(this);
-    this.handleDrag = this.handleDrag.bind(this);
     this.onDelete = this.onDelete.bind(this);
-    this.onStartDrag = this.onStartDrag.bind(this);
-    this.onStopDrag = this.onStopDrag.bind(this);
+    this.onEdit = this.onEdit.bind(this);
+    this.onDrag = this.onDrag.bind(this);
+    this.onResize = this.onResize.bind(this);
+  }
+
+
+  onInputChange(event) {
+    this.props.updateNote(this.props.id, { text: event.target.value });
   }
 
   // Handle editing
   onEdit(event) {
-    if (this.state.isEditing) { // If editing is occurring
-      this.setState({ isEditor: false }); // set to false
-      this.props.updateNote(this.state.id, this.state); //update
-    }
-
-    else {
-      this.setState({ isEditing: true });
-    }
-  }
-
-  onInputChange(event) {
-  this.setState({ text: event.target.value });
+    this.setState({ isEditing: !this.state.isEditing });
   }
 
   onDelete(event) {
-    this.props.deleteNote();
+    this.props.deleteNote(this.props.id);
   }
 
   onDrag(event, ui) {
-    this.setState({
-      notes: this.state.notes.update(id, (n) => { return Object.assign({}, n, { ui.position.left, ui.position.top }); }),
+    this.props.updateNote(this.props.id, {
+      x: ui.x,
+      y: ui.y,
     });
-    this.updateLayers(id);
   }
 
-  onStartDrag() {
-    this.setState({ zIndex: this.props.maxzIndex + 1 });
-    this.props.updateNote(this.state.id, this.state);
-  }
-  onStopDrag() {
-    this.props.updateNote(this.state.id, this.state);
-  }
-
-  onClick(event) {
-    this.props.updateLayers();
+  onResize(event, ui) {
+    this.props.updateNote(this.props.id, {
+      width: ui.width,
+      height: ui.height,
+    });
   }
 
-  render () {
-    return (
-      <Draggable
-        handle=".note-mover"
-        grid={[25, 25]}
-        defaultPosition={ x: 20, y: 20 }
-        position={position}
-        onStart={this.onStartDrag}
-        onDrag={this.onDrag}
-        onStop={this.onStopDrag}
-      >
-        <div className="note" style={{ zIndex: this.state.zIndex }}>
-              <div className="toolbar">
-                <div className="toolbar_leftflex">
-                  <h1>{this.state.title}</h1>
-                  <i className="fa fa-trash-o paddleft" aria-hidden="true" onClick={this.onDelete}></i>
-                  {this.renderIcon()}
-                </div>
-                <div className="toolbar_rightflex">
-                  <i className="fa fa-arrows-alt note-mover paddleft" aria-hidden="true"></i>
-                </div>
-              </div>
-              {this.renderTheBox()}
-            </div>
-          </Draggable>
-      );
-      }
+  renderEditButton() {
+    if (this.state.isEditing) {
+      return <i onClick={this.onEdit} className="fa fa-check" />;
+    } else {
+      return <i onClick={this.onEdit} className="fa fa-pencil" />;
     }
+  }
 
-    export default Note;
+  renderContent() {
+    if (this.state.isEditing) {
+      return (
+        <div className="content">
+          <textarea onChange={this.onInputChange} value={this.props.note.text} />
+        </div>
+      );
+    } else {
+      return <div className="content" dangerouslySetInnerHTML={{ __html: marked(this.props.note.text) }} />;
+    }
+  }
+
+  render() {
+    return (
+      <ResizableAndMovable
+        onResize={this.onResize}
+        onDrag={this.onDrag}
+        x={this.props.note.x}
+        y={this.props.note.y}
+        width={this.props.note.width}
+        height={this.props.note.height}
+        minWidth={200}
+        minHeight={125}
+        zIndex={this.props.note.zIndex}
+      >
+        <div className="note">
+          <div className="navbar">
+            <div className="bar">
+              <span className="title">{this.props.note.title}</span>
+              <div className="controls">
+                <i onClick={this.onDelete} className="fa fa-trash-o" />
+                {this.renderEditButton()}
+              </div>
+            </div>
+          </div>
+          {this.renderContent()}
+        </div>
+      </ResizableAndMovable>
+    );
+  }
+}
+
+export default Note;
