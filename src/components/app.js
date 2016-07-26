@@ -3,7 +3,7 @@ import Immutable from 'immutable';
 
 import Note from './note.js';
 import NewNoteBar from './new_note_bar.js';
-import firebase from '../firebasedb';
+import * as firebasedb from '../firebasedb';
 
 // example class based component (smart component)
 class App extends Component {
@@ -12,24 +12,26 @@ class App extends Component {
 
     this.state = {
       notes: Immutable.Map(),
-      id: 0,
       zIndex: 0,
     };
-
     this.addNote = this.addNote.bind(this);
-    this.deleteNote = this.deleteNote.bind(this);
-    this.updateNote = this.updateNote.bind(this);
   }
+
 
   componentDidMount() {
-    console.log('fetched from firebase');
-    firebase.fetchNotes((snapshot) => {
-      this.setState({
-        notes: Immutable.Map(snapshot.val()),
-      });
+    firebasedb.fetchNotes((snapshot) => {
+      if (this.state.notes.size === 0 && snapshot.val()) {
+        this.setState({
+          notes: Immutable.Map(snapshot.val()),
+          zIndex: Object.keys(snapshot.val()).length,
+        });
+      } else {
+        this.setState({
+          notes: Immutable.Map(snapshot.val()),
+        });
+      }
     });
   }
-
 
   addNote(title) {
     const newNote = {
@@ -40,8 +42,9 @@ class App extends Component {
       width: 200,
       height: 125,
       zIndex: this.state.zIndex + 1,
+      isEditing: false,
     };
-    firebase.addNote(newNote);
+    firebasedb.addNote(newNote);
     this.setState({
       zIndex: this.state.zIndex + 1,
     });
@@ -63,7 +66,7 @@ class App extends Component {
   }
 
   deleteNote(id) {
-    firebase.fireDelete(id);
+    firebasedb.deleteNote(id);
     /*
     this.setState({
       notes: this.state.notes.delete(id),
@@ -71,15 +74,21 @@ class App extends Component {
     */
   }
 
-  updateNote(id, fields) {
-    firebase.updateNotes(id, fields);
+  updateNoteContent(text, id) {
+    firebasedb.updateNoteContent(text, id);
+  }
 
-    /*
-    this.setState({
-      notes: this.state.notes.update(id, (note) => { return Object.assign({}, note, newNote); }),
-      zIndex: this.state.zIndex + 1,
-    });
-    */
+  // Handle editing
+  updateIsEditing(isEditing, id) {
+    firebasedb.updateIsEditing(isEditing, id);
+  }
+
+  updateNotePosition(x, y, id) {
+    firebasedb.updateNotePosition(x, y, id);
+  }
+
+  updateNoteSize(width, height, id) {
+    firebasedb.updateNoteSize(width, height, id);
   }
 
   render() {
@@ -87,7 +96,10 @@ class App extends Component {
       <div className="master_flex">
         <NewNoteBar addNote={this.addNote} />
         <div className="draggable_area">
-          {this.state.notes.entrySeq().map(([id, note]) => <Note key={id} id={id} note={note} zIndex={this.state.zIndex} deleteNote={this.deleteNote} updateNote={this.updateNote} />)}
+          {this.state.notes.entrySeq().map(([id, note]) => <Note key={id} id={id} note={note} zIndex={this.state.zIndex} deleteNote={this.deleteNote}
+            updateNoteContent={this.updateNoteContent} updateIsEditing={this.updateIsEditing}
+            updateNotePosition={this.updateNotePosition} updateNoteSize={this.updateNoteSize}
+          />)}
         </div>
       </div>
     );

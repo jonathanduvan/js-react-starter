@@ -12,25 +12,34 @@ firebase.initializeApp(config);
 // Get a reference to the database service
 const database = firebase.database();
 
-
 export function fetchNotes(callback) {
-  firebase.database().ref('notes').on('value', (snapshot) => {
-    callback(snapshot.val());
+  database.ref('notes').on('value', (snapshot) => {
+    callback(snapshot);
   });
 }
 
-
 export function addNote(note) {
   const id = database.ref('notes').push().key;
-
   database.ref('notes').child(id).set(note);
 }
 
 export function deleteNote(id) {
-  firebase.database().ref('notes').child(id)
-  .remove();
+  database.ref('notes').child(id).remove();
 }
 
-export function updateNote(id, fields) {
-  database.ref('notes').child(id).update(fields);
+export function updateNoteContent(text, id) {
+  database.ref('notes').child(id).update({ text });
+}
+
+// Handle editing
+export function updateIsEditing(isEditing, id) {
+  database.ref('notes').child(id).update({ isEditing });
+}
+
+export function updateNotePosition(x, y, id) {
+  database.ref('notes').child(id).update({ x, y });
+}
+
+export function updateNoteSize(width, height, id) {
+  database.ref('notes').child(id).update({ width, height });
 }

@@ -7,11 +7,6 @@ class Note extends Component {
   constructor(props) {
     super(props);
 
-    // details of each note instance
-    this.state = {
-      isEditing: false,
-    };
-
     // Binding statements
     this.onInputChange = this.onInputChange.bind(this);
     this.onDelete = this.onDelete.bind(this);
@@ -22,12 +17,12 @@ class Note extends Component {
 
 
   onInputChange(event) {
-    this.props.updateNote(this.props.id, { text: event.target.value });
+    this.props.updateNoteContent(event.target.value, this.props.id);
   }
 
   // Handle editing
   onEdit(event) {
-    this.props.updateNote(this.props.id, { isEditing: !this.state.isEditing });
+    this.props.updateIsEditing(!this.props.note.isEditing, this.props.id);
   }
 
   onDelete(event) {
@@ -35,21 +30,17 @@ class Note extends Component {
   }
 
   onDrag(event, ui) {
-    this.props.updateNote(this.props.id, {
-      x: ui.x,
-      y: ui.y,
-    });
+    const x = ui.position.left;
+    const y = ui.position.top;
+    this.props.updateNotePosition(x, y, this.props.id);
   }
 
   onResize(event, ui) {
-    this.props.updateNote(this.props.id, {
-      width: ui.width,
-      height: ui.height,
-    });
+    this.props.updateNoteSize(ui.width, ui.height, this.props.id);
   }
 
   renderEditButton() {
-    if (this.state.isEditing) {
+    if (this.props.note.isEditing) {
       return <i onClick={this.onEdit} className="fa fa-check" />;
     } else {
       return <i onClick={this.onEdit} className="fa fa-pencil" />;
@@ -57,7 +48,7 @@ class Note extends Component {
   }
 
   renderContent() {
-    if (this.state.isEditing) {
+    if (this.props.note.isEditing) {
       return (
         <div className="content">
           <textarea onChange={this.onInputChange} value={this.props.note.text} />
@@ -80,6 +71,7 @@ class Note extends Component {
         height={this.props.note.height}
         minWidth={200}
         minHeight={125}
+        canUpdatePositionByParent
         zIndex={this.props.note.zIndex}
       >
         <div className="note">
