@@ -3,7 +3,7 @@ import Immutable from 'immutable';
 
 import Note from './note.js';
 import NewNoteBar from './new_note_bar.js';
-
+import firebase from '../firebasedb';
 
 // example class based component (smart component)
 class App extends Component {
@@ -21,7 +21,31 @@ class App extends Component {
     this.updateNote = this.updateNote.bind(this);
   }
 
+  componentDidMount() {
+    console.log('fetched from firebase');
+    firebase.fetchNotes((snapshot) => {
+      this.setState({
+        notes: Immutable.Map(snapshot.val()),
+      });
+    });
+  }
+
+
   addNote(title) {
+    const newNote = {
+      title,
+      text: 'text',
+      x: 0,
+      y: 20,
+      width: 200,
+      height: 125,
+      zIndex: this.state.zIndex + 1,
+    };
+    firebase.addNote(newNote);
+    this.setState({
+      zIndex: this.state.zIndex + 1,
+    });
+    /*
     this.setState({
       notes: this.state.notes.set(this.state.id, {
         title,
@@ -35,19 +59,27 @@ class App extends Component {
       id: this.state.id + 1,
       zIndex: this.state.zIndex + 1,
     });
+    */
   }
 
   deleteNote(id) {
+    firebase.fireDelete(id);
+    /*
     this.setState({
       notes: this.state.notes.delete(id),
     });
+    */
   }
 
-  updateNote(id, newNote) {
+  updateNote(id, fields) {
+    firebase.updateNotes(id, fields);
+
+    /*
     this.setState({
       notes: this.state.notes.update(id, (note) => { return Object.assign({}, note, newNote); }),
       zIndex: this.state.zIndex + 1,
     });
+    */
   }
 
   render() {

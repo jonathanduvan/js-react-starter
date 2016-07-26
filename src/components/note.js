@@ -27,7 +27,7 @@ class Note extends Component {
 
   // Handle editing
   onEdit(event) {
-    this.setState({ isEditing: !this.state.isEditing });
+    this.props.updateNote(this.props.id, { isEditing: !this.state.isEditing });
   }
 
   onDelete(event) {
